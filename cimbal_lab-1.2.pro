@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,11 +29,13 @@ SOURCES += \
         mainwindow.cpp \
     graphic/abstractgraphicalobject.cpp \
     utils/matrix4x4.cpp \
+    graphic/Cube/cube.cpp
 
 HEADERS += \
         mainwindow.h \
     graphic/abstractgraphicalobject.h \
     utils/matrix4x4.h \
+    graphic/Cube/cube.h
 
 FORMS += \
         mainwindow.ui
@@ -41,6 +43,7 @@ FORMS += \
 INCLUDEPATH += \
     graphic \
     utils \
+    Cube
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
