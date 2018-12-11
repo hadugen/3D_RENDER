@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setFixedSize(755, 755);
     setCursor(Qt::OpenHandCursor);
 
-    //setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
+    _objects.append(new Cube);
 
     _renderOneFrameTimer = new QTimer;
     connect(_renderOneFrameTimer, SIGNAL(timeout()), this, SLOT(start()));
@@ -57,6 +57,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         _frameRate = (_frameRate == 10) ? 10 : _frameRate - 10;
         _renderOneFrameTimer->setInterval(1000 / _frameRate);
         break;
+    case Qt::Key_1:
+        break;
+    case Qt::Key_2:
+        break;
     default:
         break;
     }
@@ -73,39 +77,15 @@ void MainWindow::drawFPS(int frameTime) {
     _scene->addPath(path, QPen(QBrush(Qt::red), 1), QBrush(Qt::red));
 }
 
-void MainWindow::renderObject(Matrix4x4 matrix, AbstractGraphicalObject object) {
+void MainWindow::render(Matrix4x4 matrix, QVector<AbstractGraphicalObject*> objects) {
     _scene->clear();
-
     drawFPS(_lastFrameWasAt.elapsed());
     _lastFrameWasAt = QTime::currentTime();
-
-    QVector <QVector4D> dots;
-    Matrix4x4 matViewPort;
-    matViewPort.toViewPortMatrix(
-                0,
-                0,
-                sceneRect().size().height(),
-                sceneRect().size().width()
-    );
-
-    for(QVector3D vert : object.verts()) {
-        QVector4D vec4(vert, 1);
-        QVector4D dot = matrix * vec4;
-        double z = dot.z();
-        dot = matViewPort * dot;
-        dot = dot / dot.w();
-        dot.setZ(z);
-        dots.push_back(dot);
+    _frame = QImage(750, 750, QImage::Format_RGBA8888);
+    for(AbstractGraphicalObject *obj : objects) {
+        obj->renderOnImage(matrix, &_frame);
     }
-    for(QVector2D edge : object.edges()) {
-        _scene->addLine(
-                dots[edge.x()].x(),
-                dots[edge.x()].y(),
-                dots[edge.y()].x(),
-                dots[edge.y()].y(),
-                QPen(Qt::black)
-        );
-    }
+    _scene->addPixmap(QPixmap::fromImage(_frame));
 }
 
 void MainWindow::start() {
@@ -124,18 +104,14 @@ void MainWindow::start() {
     _currentCameraPos = QVector3D(cameraXCoord, cameraYCoord, cameraZCoord);
     QVector3D objectPosition(0.0f, 0.0f, 0.0f);
     matView.lookAt(_currentCameraPos, objectPosition, cameraUp);
-
     double aspectRatio = size.height() / size.width();
-
     matProjection.toProjectionMatrix(getNormalForVector(_currentCameraPos - objectPosition), aspectRatio);
     Matrix4x4 viewProjection = matProjection * matView;
-    AbstractGraphicalObject drawable;
-
-    renderObject(viewProjection, drawable);
+    render(viewProjection, _objects);
     _deltaCameraPos = QVector2D(0, 0);
 }
 
-double MainWindow::getNormalForVector(QVector3D vec) {
+double MainWindow::getNormalForVector(const QVector3D &vec) {
     return std::sqrt(vec.x() * vec.x() + vec.y() * vec.y() + vec.z() * vec.z());
 }
 

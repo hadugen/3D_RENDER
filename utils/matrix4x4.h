@@ -1,8 +1,10 @@
 #ifndef MATRIX4X4_H
 #define MATRIX4X4_H
 
-#include <abstractgraphicalobject.h>
 #include <QDebug>
+#include <QVector2D>
+#include <QVector3D>
+#include <QVector4D>
 
 class Matrix4x4
 {

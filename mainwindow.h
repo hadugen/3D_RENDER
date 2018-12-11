@@ -4,14 +4,18 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <matrix4x4.h>
-#include <abstractgraphicalobject.h>
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QGraphicsTextItem>
 #include <QWheelEvent>
 #include <QTime>
+#include <QPainterPath>
 #include <QDebug>
 #include <QTimer>
+#include <QtConcurrent>
+#include <Cube/cube.h>
+
+struct ShadePackage;
 
 class MainWindow : public QGraphicsView
 {
@@ -22,10 +26,11 @@ public:
     ~MainWindow();
 
 private slots:
-    void renderObject(Matrix4x4 matrix, AbstractGraphicalObject object);
+    void render(Matrix4x4 matrix, QVector<AbstractGraphicalObject *> objects);
     void start();
 
 private:
+
     QGraphicsScene *_scene;
     QVector <AbstractGraphicalObject*> _objects;
 
@@ -36,6 +41,9 @@ private:
     double _yAxisRotation = 0.5;
     double _zAxisRotation = 0.5;
 
+    QImage _frame;
+    QPainter _painter;
+
     QPointF _lastClickPos;
 
     QTime _lastFrameWasAt;
@@ -45,7 +53,8 @@ private:
 
     void drawFPS(int frameTime);
 
-    double getNormalForVector(QVector3D vec);
+    double getNormalForVector(const QVector3D &vec);
+
     double getYAxisRotation();
     double getXAxisRotation();
 
