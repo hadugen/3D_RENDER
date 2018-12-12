@@ -2,19 +2,17 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QGraphicsView (parent),
+    QOpenGLWidget (parent),
     _deltaCameraPos(0.0f, 0.0f),
     _currentCameraPos(0.0f, 0.0f, 0.0f) {
 
-    _scene = new QGraphicsScene(0, 0, 750, 750);
-    setScene(_scene);
     setFixedSize(755, 755);
     setCursor(Qt::OpenHandCursor);
 
     _objects.append(new Cube);
 
     _renderOneFrameTimer = new QTimer;
-    connect(_renderOneFrameTimer, SIGNAL(timeout()), this, SLOT(start()));
+    connect(_renderOneFrameTimer, SIGNAL(timeout()), this, SLOT(update()));
     _renderOneFrameTimer->setTimerType(Qt::PreciseTimer);
     _renderOneFrameTimer->start(1000 / _frameRate);
 }
@@ -24,30 +22,30 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    QGraphicsView::mouseMoveEvent(event);
-    QPointF pos = mapToScene(event->pos());
+    QOpenGLWidget::mouseMoveEvent(event);
+    QPointF pos = event->pos();
     _deltaCameraPos += QVector2D((pos - _lastClickPos) / 8);
     _lastClickPos = pos;
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
-    QGraphicsView::mousePressEvent(event);
-    _lastClickPos = mapToScene(event->pos());
+    QOpenGLWidget::mousePressEvent(event);
+    _lastClickPos = event->pos();
     setCursor(Qt::ClosedHandCursor);
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
-    QGraphicsView::mouseReleaseEvent(event);
+    QOpenGLWidget::mouseReleaseEvent(event);
     setCursor(Qt::OpenHandCursor);
 }
 
 void MainWindow::wheelEvent(QWheelEvent *event) {
-    QGraphicsView::wheelEvent(event);
+    QOpenGLWidget::wheelEvent(event);
     _zAxisRotation += event->delta() / 50.0f;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    QGraphicsView::keyPressEvent(event);
+    QOpenGLWidget::keyPressEvent(event);
     switch (event->nativeVirtualKey()) {
     case 107: /* + */
         _frameRate = (_frameRate == 250) ? 250 : _frameRate + 10;
@@ -66,6 +64,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     }
 }
 
+void MainWindow::paintEvent(QPaintEvent *event) {
+    prepareFrame();
+    _painter.begin(this);
+    _painter.fillRect(event->rect(), Qt::white);
+    _painter.drawImage(event->rect(), _frame);
+    _painter.end();
+}
+
 void MainWindow::drawFPS(int frameTime) {
     QString text = QString::number((int)(1000.0 / frameTime));
     QFont font;
@@ -74,26 +80,27 @@ void MainWindow::drawFPS(int frameTime) {
     font.setFamily("Consolas");
     QPainterPath path;
     path.addText(0, 20, font,  text);
-    _scene->addPath(path, QPen(QBrush(Qt::red), 1), QBrush(Qt::red));
+    _painter.begin(&_frame);
+    _painter.setPen(Qt::red);
+    _painter.setBrush(Qt::red);
+    _painter.drawPath(path);
+    _painter.end();
 }
 
-void MainWindow::render(Matrix4x4 matrix, QVector<AbstractGraphicalObject*> objects) {
-    _scene->clear();
+void MainWindow::renderObjOnFrame(Matrix4x4 matrix, QVector<AbstractGraphicalObject*> objects) {
+    _frame = QImage(750, 750, QImage::Format_RGBA8888);
     drawFPS(_lastFrameWasAt.elapsed());
     _lastFrameWasAt = QTime::currentTime();
-    _frame = QImage(750, 750, QImage::Format_RGBA8888);
     for(AbstractGraphicalObject *obj : objects) {
         obj->renderOnImage(matrix, &_frame);
     }
-    _scene->addPixmap(QPixmap::fromImage(_frame));
 }
 
-void MainWindow::start() {
+void MainWindow::prepareFrame() {
     QVector3D cameraUp(0.0f, 1.0f, 0.0f);
     Matrix4x4 matView;
     Matrix4x4 matProjection;
-    QSizeF size = sceneRect().size();
-
+    QSizeF size = this->size();
     _xAxisRotation = getXAxisRotation();
     _yAxisRotation = getYAxisRotation();
     double zoom = 0.02 * _zAxisRotation + 3.0;
@@ -107,7 +114,7 @@ void MainWindow::start() {
     double aspectRatio = size.height() / size.width();
     matProjection.toProjectionMatrix(getNormalForVector(_currentCameraPos - objectPosition), aspectRatio);
     Matrix4x4 viewProjection = matProjection * matView;
-    render(viewProjection, _objects);
+    renderObjOnFrame(viewProjection, _objects);
     _deltaCameraPos = QVector2D(0, 0);
 }
 
