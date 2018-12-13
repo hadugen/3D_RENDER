@@ -1,20 +1,19 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <matrix4x4.h>
 #include <QMouseEvent>
 #include <QKeyEvent>
-#include <QGraphicsTextItem>
 #include <QWheelEvent>
 #include <QTime>
 #include <QPainterPath>
 #include <QPaintEvent>
 #include <QDebug>
 #include <QTimer>
-#include <Cube/cube.h>
 #include <QOpenGLWidget>
+
+#include "Cube/cube.h"
+#include "Lamp/lamp.h"
+#include "matrix4x4.h"
 
 struct ShadePackage;
 
@@ -33,6 +32,7 @@ private slots:
 private:
 
     QVector <AbstractGraphicalObject*> _objects;
+    QVector <AbstractGraphicalObject*> _lamps;
 
     QVector2D _deltaCameraPos;
     QVector3D _currentCameraPos;
@@ -45,6 +45,9 @@ private:
     QPainter _painter;
 
     QPointF _lastClickPos;
+    Qt::MouseButton _lastButtonPressed;
+
+    Lamp *_currentLamp = nullptr;
 
     QTime _lastFrameWasAt;
     uint _frameRate = 60;

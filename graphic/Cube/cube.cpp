@@ -74,112 +74,13 @@ void Cube::drawFace(const QVector<QVector4D> &dots, QVector3D *absoluteFace, QVe
         Dot3D(absoluteFace[1], camRelativeFace[1]),
         Dot3D(absoluteFace[2], camRelativeFace[2])
     };
-    addBorderLine(face[0], face[1], lines);
-    addBorderLine(face[1], face[2], lines);
-    addBorderLine(face[2], face[0], lines);
-    shadeLambFong(lines, absoluteFace);
+    Utils::addBorderLine(face[0], face[1], lines);
+    Utils::addBorderLine(face[1], face[2], lines);
+    Utils::addBorderLine(face[2], face[0], lines);
+    Utils::shadeLambFong(lines, absoluteFace, _image);
 }
 
-void Cube::addBorderLine(Dot3D beg, Dot3D end, std::map<int, LineX> &lines) {
-    QList <Dot3D> dotList = getDotsForLine(beg, end);
-    for(Dot3D dot : dotList) {
-        addBorderPixel(Dot3D(dot.absolute, dot.cam), lines);
-    }
-    QVector3D lastCamPoint(int(end.cam.x() + 0.5), int(end.cam.y() + 0.5), end.cam.z());
-    addBorderPixel(Dot3D(end.absolute, lastCamPoint), lines);
-}
 
-void Cube::shadeLambFong(std::map<int, LineX> &lines, QVector3D *absoluteFace) {
-
-    QVector3D vec1(
-            absoluteFace[1].x() - absoluteFace[0].x(),
-            absoluteFace[1].y() - absoluteFace[0].y(),
-            absoluteFace[1].z() - absoluteFace[0].z()
-    );
-    QVector3D vec2(
-            absoluteFace[2].x() - absoluteFace[1].x(),
-            absoluteFace[2].y() - absoluteFace[1].y(),
-            absoluteFace[2].z() - absoluteFace[1].z()
-    );
-    QVector3D normal = QVector3D::normal(vec1, vec2);
-    std::map<int, LineX>::iterator it;
-    QList <Dot3D> dots3d;
-    for(it = lines.begin(); it != lines.end(); it++) {
-        LineX lin = it->second;
-        Dot3D beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1));
-        Dot3D end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2));
-        shadeLine(beg, end, normal);
-    }
-}
-
-void Cube::shadeLine(Dot3D beg, Dot3D end, QVector3D normal) {
-    QList <Dot3D> dotList = getDotsForLine(beg, end);
-    QColor color(Qt::blue);
-    for(Dot3D dot : dotList) {
-        _image->setPixelColor(dot.cam.x(), dot.cam.y(), color);
-    }
-}
-
-void Cube::addBorderPixel(Dot3D point, std::map<int, LineX>& lines) {
-    int x = static_cast<int>(point.cam.x() + 0.5);
-    int y = static_cast<int>(point.cam.y() + 0.5);
-    float z = point.cam.z();
-    std::map<int, LineX>::iterator it;
-    it = lines.find(y);
-    if(it != lines.end()) {
-        LineX line = it->second;
-        if(x < line.x1) {
-            line.x1 = x;
-            line.z1 = z;
-            line.absoluteBeg = point.absolute;
-        } else if( x > line.x2) {
-            line.x2 = x;
-            line.z2 = z;
-            line.absoluteEnd = point.absolute;
-        }
-        lines[y] = line;
-    } else {
-        LineX line(x, x, z, z, point.absolute, point.absolute);
-        lines[y] = line;
-    }
-}
-
-QList <Dot3D> Cube::getDotsForLine(Dot3D beg, Dot3D end) {
-    QList <Dot3D> result;
-    bool steep = abs(end.cam.y() - beg.cam.y()) > abs(end.cam.x() - beg.cam.x());
-    if (steep) {
-        float temp = beg.cam.x();
-        beg.cam.setX(beg.cam.y());
-        beg.cam.setY(temp);
-
-        temp = end.cam.x();
-        end.cam.setX(end.cam.y());
-        end.cam.setY(temp);
-    }
-    if (beg.cam.x() > end.cam.x()) {
-        std::swap(beg, end);
-    }
-    float dx = end.cam.x() - beg.cam.x();
-    float dy = std::abs(end.cam.y() - beg.cam.y());
-    float error = dx / 2;
-    int ystep = (beg.cam.y() < end.cam.y()) ? 1 : -1;
-    int y = int(beg.cam.y() + 0.5);
-    float z = beg.cam.z();
-    float zstep = (end.cam.z() - beg.cam.z()) / (end.cam.x() - beg.cam.x());
-    QVector3D delta = (end.absolute - beg.absolute) / (end.cam.x() - beg.cam.x());
-    QVector3D worldPoint = beg.absolute;
-    for (int x = int(beg.cam.x() + 0.5); x <= int(end.cam.x() + 0.5); x++, z += zstep, worldPoint += delta)
-    {
-        QVector3D camPoint(steep ? y : x, steep ? x : y, z);
-        result.push_back(Dot3D(worldPoint ,camPoint));
-        error -= dy;
-        if (error < 0) {
-            y += ystep;
-            error += dx;
-        }
-    }
-    return result;
-}
 
 void Cube::addEdges() {
     _edges.push_back(QVector2D(0, 1));

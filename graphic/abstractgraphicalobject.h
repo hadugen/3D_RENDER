@@ -6,30 +6,6 @@
 #include <QPainter>
 #include <matrix4x4.h>
 
-struct LineX {
-    LineX(){}
-    LineX(int x1, int x2, float z1, float z2, QVector3D absoluteBeg, QVector3D absoluteEnd) {
-        this->x1 = x1;
-        this->x2 = x2;
-        this->z1 = z1;
-        this->z2 = z2;
-        this->absoluteBeg = absoluteBeg;
-        this->absoluteEnd = absoluteEnd;
-    }
-    int x1, x2;
-    float z1, z2;
-    QVector3D absoluteBeg;
-    QVector3D absoluteEnd;
-};
-
-struct Dot3D {
-    Dot3D(QVector3D absolute, QVector3D cam) {
-        this->absolute = absolute;
-        this->cam = cam;
-    }
-    QVector3D absolute;
-    QVector3D cam;
-};
 
 class AbstractGraphicalObject
 {

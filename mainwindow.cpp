@@ -10,6 +10,10 @@ MainWindow::MainWindow(QWidget *parent) :
     setCursor(Qt::OpenHandCursor);
 
     _objects.append(new Cube);
+    _lamps.append(new Lamp(QVector3D(0.f, 0.0f, 1.5f), 10.0, Qt::red));
+    _lamps.append(new Lamp(QVector3D(-1.5f, 0.f, 0.f), 10.0, Qt::green));
+    _lamps.append(new Lamp(QVector3D(0.f, -1.5f, 0.f), 10.0, Qt::blue));
+    _objects.append(_lamps);
 
     _renderOneFrameTimer = new QTimer;
     connect(_renderOneFrameTimer, SIGNAL(timeout()), this, SLOT(update()));
@@ -23,20 +27,57 @@ MainWindow::~MainWindow() {
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     QOpenGLWidget::mouseMoveEvent(event);
-    QPointF pos = event->pos();
-    _deltaCameraPos += QVector2D((pos - _lastClickPos) / 8);
-    _lastClickPos = pos;
+    switch (_lastButtonPressed) {
+    case Qt::RightButton: {
+        QPointF pos = event->pos();
+        _deltaCameraPos += QVector2D((pos - _lastClickPos) / 8);
+        _lastClickPos = pos;
+        break;
+    }
+    case Qt::LeftButton:
+        if(_currentLamp != nullptr) {
+            _currentLamp->moveTo(event->pos().x(), event->pos().y());
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
     QOpenGLWidget::mousePressEvent(event);
-    _lastClickPos = event->pos();
     setCursor(Qt::ClosedHandCursor);
+    _lastButtonPressed = event->button();
+    switch (event->button()) {
+    case Qt::RightButton:
+        _lastClickPos = event->pos();
+        break;
+    case Qt::LeftButton:
+        for(int i = 0; i < _lamps.size(); i++) {
+            Lamp *lamp = (Lamp*)_lamps.at(i);
+            if(lamp->itsMe(event->pos().x(), event->pos().y())) {
+                _currentLamp = lamp;
+            }
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
     QOpenGLWidget::mouseReleaseEvent(event);
     setCursor(Qt::OpenHandCursor);
+    switch (event->button()) {
+    case Qt::RightButton:
+        _lastClickPos = event->pos();
+        break;
+    case Qt::LeftButton:
+        _currentLamp = nullptr;
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::wheelEvent(QWheelEvent *event) {
@@ -67,7 +108,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 void MainWindow::paintEvent(QPaintEvent *event) {
     prepareFrame();
     _painter.begin(this);
-    _painter.fillRect(event->rect(), Qt::white);
+    _painter.fillRect(event->rect(), Qt::black);
     _painter.drawImage(event->rect(), _frame);
     _painter.end();
 }
@@ -101,6 +142,7 @@ void MainWindow::prepareFrame() {
     Matrix4x4 matView;
     Matrix4x4 matProjection;
     QSizeF size = this->size();
+
     _xAxisRotation = getXAxisRotation();
     _yAxisRotation = getYAxisRotation();
     double zoom = 0.02 * _zAxisRotation + 3.0;

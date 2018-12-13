@@ -29,13 +29,17 @@ SOURCES += \
         mainwindow.cpp \
     graphic/abstractgraphicalobject.cpp \
     utils/matrix4x4.cpp \
-    graphic/Cube/cube.cpp
+    graphic/Cube/cube.cpp \
+    graphic/Lamp/lamp.cpp \
+    utils/utils.cpp
 
 HEADERS += \
         mainwindow.h \
     graphic/abstractgraphicalobject.h \
     utils/matrix4x4.h \
-    graphic/Cube/cube.h
+    graphic/Cube/cube.h \
+    graphic/Lamp/lamp.h \
+    utils/utils.h
 
 FORMS += \
         mainwindow.ui
