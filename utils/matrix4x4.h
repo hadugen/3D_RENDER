@@ -1,7 +1,6 @@
 #ifndef MATRIX4X4_H
 #define MATRIX4X4_H
 
-#include <QDebug>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
@@ -21,8 +20,6 @@ public:
     Matrix4x4 & operator= (const Matrix4x4 & second);
     Matrix4x4 operator* (const Matrix4x4 & second);
     QVector4D operator* (const QVector4D & second);
-
-    QString toString();
 
 private:
     double _matrix[16];

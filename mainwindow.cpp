@@ -10,15 +10,14 @@ MainWindow::MainWindow(QWidget *parent) :
     setCursor(Qt::OpenHandCursor);
 
     _objects.append(new Cube);
-    _lamps.append(new Lamp(QVector3D(0.f, 0.0f, 1.5f), 10.0, Qt::red));
-    _lamps.append(new Lamp(QVector3D(-1.5f, 0.f, 0.f), 10.0, Qt::green));
-    _lamps.append(new Lamp(QVector3D(0.f, -1.5f, 0.f), 10.0, Qt::blue));
-    _objects.append(_lamps);
+    _objects.append(new Lamp(QVector3D(0.f, 0.0f, 1.5f), 10.0, Qt::red));
+    _objects.append(new Lamp(QVector3D(-1.5f, 0.f, 0.f), 10.0, Qt::green));
+    _objects.append(new Lamp(QVector3D(0.f, -1.5f, 0.f), 10.0, Qt::blue));
 
     _renderOneFrameTimer = new QTimer;
     connect(_renderOneFrameTimer, SIGNAL(timeout()), this, SLOT(update()));
     _renderOneFrameTimer->setTimerType(Qt::PreciseTimer);
-    _renderOneFrameTimer->start(1000 / _frameRate);                         // таймер обновления экрана
+    _renderOneFrameTimer->start(1000 / _frameRate);                         // таймер обновления экрана (_famerate == 60)
 }
 
 MainWindow::~MainWindow() {
@@ -34,13 +33,15 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
         _lastClickPos = pos;
         break;
     }
-    case Qt::LeftButton:
+    case Qt::LeftButton: {
         if(_currentLamp != nullptr) {
             _currentLamp->moveTo(event->pos().x(), event->pos().y());
         }
         break;
-    default:
+    }
+    default: {
         break;
+    }
     }
 }
 
@@ -49,16 +50,14 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     setCursor(Qt::ClosedHandCursor);
     _lastButtonPressed = event->button();
     switch (event->button()) {
-    case Qt::RightButton:
+    case Qt::RightButton:                                   // правая кнопка - вращение
         _lastClickPos = event->pos();
         break;
     case Qt::LeftButton:
-        for(int i = 0; i < _lamps.size(); i++) {
-            Lamp *lamp = (Lamp*)_lamps.at(i);
-            if(lamp->itsMe(event->pos().x(), event->pos().y())) {
-                _currentLamp = lamp;
-            }
-        }
+        _currentLamp = Lamp::findLampByCoords(
+                    event->x(),
+                    event->y()
+        );
         break;
     default:
         break;
@@ -96,16 +95,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         _frameRate = (_frameRate == 10) ? 10 : _frameRate - 10;
         _renderOneFrameTimer->setInterval(1000 / _frameRate);
         break;
-    case Qt::Key_1:
-        break;
-    case Qt::Key_2:
-        break;
     default:
         break;
     }
 }
 
-void MainWindow::paintEvent(QPaintEvent *event) {
+void MainWindow::paintEvent(QPaintEvent *event) {           // paintEvent вызывается каждый раз, когда вызывается update()
     prepareFrame();
     _painter.begin(this);
     _painter.fillRect(event->rect(), Qt::black);
@@ -128,7 +123,7 @@ void MainWindow::drawFPS(int frameTime) {
     _painter.end();
 }
 
-void MainWindow::renderObjOnFrame(Matrix4x4 matrix, QVector<AbstractGraphicalObject*> objects) {
+void MainWindow::renderObjectsOnFrame(Matrix4x4 matrix, QVector<AbstractGraphicalObject*> objects) {
     _frame = QImage(750, 750, QImage::Format_RGBA8888);
     drawFPS(_lastFrameWasAt.elapsed());
     _lastFrameWasAt = QTime::currentTime();
@@ -143,8 +138,8 @@ void MainWindow::prepareFrame() {
     Matrix4x4 matProjection;
     QSizeF size = this->size();
 
-    _xAxisRotation = getXAxisRotation();
-    _yAxisRotation = getYAxisRotation();
+    _xAxisRotation = getNewXAxisRotation();
+    _yAxisRotation = getNewYAxisRotation();
     double zoom = 0.02 * _zAxisRotation + 3.0;
 
     double cameraXCoord = zoom * cos(_xAxisRotation) * cos(_yAxisRotation);
@@ -156,7 +151,7 @@ void MainWindow::prepareFrame() {
     double aspectRatio = size.height() / size.width();
     matProjection.toProjectionMatrix(getNormalForVector(_currentCameraPos - objectPosition), aspectRatio);
     Matrix4x4 viewProjection = matProjection * matView;
-    renderObjOnFrame(viewProjection, _objects);
+    renderObjectsOnFrame(viewProjection, _objects);
     _deltaCameraPos = QVector2D(0, 0);
 }
 
@@ -164,7 +159,7 @@ double MainWindow::getNormalForVector(const QVector3D &vec) {
     return std::sqrt(vec.x() * vec.x() + vec.y() * vec.y() + vec.z() * vec.z());
 }
 
-double MainWindow::getXAxisRotation() {
+double MainWindow::getNewXAxisRotation() {
     double newXAxisRotation = _xAxisRotation + _deltaCameraPos.y() / 30.0;
     if (newXAxisRotation <= -M_PI_2) {
         return -M_PI_2 + 0.01;
@@ -175,7 +170,7 @@ double MainWindow::getXAxisRotation() {
     }
 }
 
-double MainWindow::getYAxisRotation() {
+double MainWindow::getNewYAxisRotation() {
     double newYAxisRotation = _yAxisRotation + _deltaCameraPos.x() / 30.0;
     if(newYAxisRotation > 2*M_PI) {
         newYAxisRotation -= 2*M_PI;

@@ -5,7 +5,7 @@
 #include <QImage>
 #include <QPainter>
 #include <matrix4x4.h>
-
+#include <utils.h>
 
 class AbstractGraphicalObject
 {
@@ -35,6 +35,9 @@ protected:
     virtual void addVerts() = 0;
     virtual void addEdges() = 0;
     virtual void addFaces() = 0;
+
+    void addBorderPixel(Dot3D point, std::map<int, LineX> &lines);
+    void addBorderPixel(QVector3D point, std::map<int, LineX> &lines);
 };
 
 #endif // ABSTRACTGRAPHICALOBJECT_H

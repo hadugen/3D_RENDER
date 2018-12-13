@@ -1,19 +1,53 @@
 #include "lamp.h"
 
-QVector <Lamp*> Lamp::lamps;
+QVector <Lamp*> Lamp::_lamps;
 
-Lamp::Lamp(QVector3D position, double zoom, QColor color) {
+Lamp::Lamp(QVector3D position, double radius, QColor color) {
     _absolutePosition = position;
-    _radius = zoom;
+    _radius = radius;
+    _squaredRadius = radius * radius;
     _screenPosition = QVector3D(0, 0, 0);
     _color = color;
     _intensity = QVector2D(0.4f, 0.5f);
     _attenuation = QVector2D(0.1f, 0.1f);
-    lamps.append(this);
+    _lamps.append(this);
 }
 
 Lamp::~Lamp() {
-    lamps.removeOne(this);
+    _lamps.removeOne(this);
+}
+
+void Lamp::bresCircle(QVector3D point, int x, int y, std::map<int, LineX>& lines)
+{
+    int xc = static_cast<int>(point.x());
+    int yc = static_cast<int>(point.y());
+    float zc = point.z();
+    addBorderPixel(QVector3D(xc + x, yc + y, zc), lines);
+    addBorderPixel(QVector3D(xc - x, yc + y, zc), lines);
+    addBorderPixel(QVector3D(xc + x, yc - y, zc), lines);
+    addBorderPixel(QVector3D(xc - x, yc - y, zc), lines);
+    addBorderPixel(QVector3D(xc + y, yc + x, zc), lines);
+    addBorderPixel(QVector3D(xc - y, yc + x, zc), lines);
+    addBorderPixel(QVector3D(xc + y, yc - x, zc), lines);
+    addBorderPixel(QVector3D(xc - y, yc - x, zc), lines);
+}
+
+void Lamp::addBorderCircle(QVector3D center, int radius, std::map<int, LineX>& lines)
+{
+    int x = 0;
+    int y = radius;
+    int d = 3 - 2 * radius;
+    while (y >= x) {
+        bresCircle(center, x, y, lines);
+        x++;
+        if (d > 0) {
+            y--;
+            d = d + 4 * (x - y) + 10;
+        }
+        else {
+            d = d + 4 * x + 6;
+        }
+    }
 }
 
 void Lamp::moveTo(int x, int y) {
@@ -32,7 +66,7 @@ void Lamp::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
         _isMoved = false;
     }
     _screenPosition = Utils::worldToScreen(_absolutePosition, viewProjection, image->size());
-    Utils::addBorderCircle(_screenPosition, _radius, lines);
+    addBorderCircle(_screenPosition, _radius, lines);
     std::map<int, LineX>::iterator it;;
     for(it = lines.begin(); it != lines.end(); it++) {
         int y = it->first;
@@ -57,20 +91,21 @@ void Lamp::addFaces() {
 
 }
 
-bool Lamp::itsMe(int x, int y) {
-    QVector2D vec = QVector2D(_screenPosition.x(), _screenPosition.y()) - QVector2D(x, y);
-    float dist = vec.x() * vec.x() + vec.y() * vec.y();
-    if(dist < _radius * _radius) {
-        return true;
-    } else {
-        return false;
+Lamp * Lamp::findLampByCoords(double x, double y) {
+    for(Lamp *lamp : _lamps) {
+        QVector2D vec = QVector2D(lamp->_screenPosition.x(), lamp->_screenPosition.y()) - QVector2D(x, y);
+        double dist = vec.x() * vec.x() + vec.y() * vec.y();
+        if(dist < lamp->_squaredRadius) {
+            return lamp;
+        }
     }
+    return nullptr;
 }
 
 QVector4D Lamp::calcLightOnPoint(QVector3D worldPos, QVector3D normal) {
     QVector3D lightDirection = worldPos - _absolutePosition;
     float dist2 = lightDirection.lengthSquared();
-    if (dist2 > _radius * _radius) {
+    if (dist2 > _squaredRadius) {
         return QVector4D();
     }
     float dist = sqrt(dist2);
@@ -85,7 +120,7 @@ QVector4D Lamp::calcLightOnPoint(QVector3D worldPos, QVector3D normal) {
 
 QColor Lamp::calcSummaryLight(QVector3D worldPos, QVector3D normal) {
     QVector4D colorVector;
-    for(Lamp *lamp : lamps) {
+    for(Lamp *lamp : _lamps) {
         if(Utils::IsLit(normal, worldPos, lamp->position())) {
             colorVector = colorVector + lamp->calcLightOnPoint(worldPos, normal);
         }

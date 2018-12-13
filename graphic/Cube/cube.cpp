@@ -74,13 +74,51 @@ void Cube::drawFace(const QVector<QVector4D> &dots, QVector3D *absoluteFace, QVe
         Dot3D(absoluteFace[1], camRelativeFace[1]),
         Dot3D(absoluteFace[2], camRelativeFace[2])
     };
-    Utils::addBorderLine(face[0], face[1], lines);
-    Utils::addBorderLine(face[1], face[2], lines);
-    Utils::addBorderLine(face[2], face[0], lines);
-    Utils::shadeLambFong(lines, absoluteFace, _image);
+    addBorderLine(face[0], face[1], lines);
+    addBorderLine(face[1], face[2], lines);
+    addBorderLine(face[2], face[0], lines);
+    shadeLambFong(lines, absoluteFace, _image);
 }
 
+void Cube::addBorderLine(Dot3D beg, Dot3D end, std::map<int, LineX> &lines) {
+    QList <Dot3D> dotList = Utils::getDotsForLine(beg, end);
+    for(Dot3D dot : dotList) {
+        addBorderPixel(Dot3D(dot.absolute, dot.cam), lines);
+    }
+    QVector3D lastCamPoint(int(end.cam.x() + 0.5), int(end.cam.y() + 0.5), end.cam.z());
+    addBorderPixel(Dot3D(end.absolute, lastCamPoint), lines);
+}
 
+void Cube::shadeLambFong(std::map<int, LineX> &lines, QVector3D *absoluteFace, QImage *image) {
+
+    QVector3D vec1(
+            absoluteFace[1].x() - absoluteFace[0].x(),
+            absoluteFace[1].y() - absoluteFace[0].y(),
+            absoluteFace[1].z() - absoluteFace[0].z()
+    );
+    QVector3D vec2(
+            absoluteFace[2].x() - absoluteFace[1].x(),
+            absoluteFace[2].y() - absoluteFace[1].y(),
+            absoluteFace[2].z() - absoluteFace[1].z()
+    );
+    QVector3D normal = QVector3D::normal(vec1, vec2);
+    std::map<int, LineX>::iterator it;
+    for(it = lines.begin(); it != lines.end(); it++) {
+        LineX lin = it->second;
+        Dot3D beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1));
+        Dot3D end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2));
+        shadeLine(beg, end, normal, image);
+    }
+}
+
+void Cube::shadeLine(Dot3D beg, Dot3D end, QVector3D normal, QImage *image) {
+    QList <Dot3D> dotList = Utils::getDotsForLine(beg, end);
+    QColor color(Qt::white);
+    for(Dot3D dot : dotList) {
+        color = Lamp::calcSummaryLight(dot.absolute, normal);
+        image->setPixelColor(dot.cam.x(), dot.cam.y(), color);
+    }
+}
 
 void Cube::addEdges() {
     _edges.push_back(QVector2D(0, 1));

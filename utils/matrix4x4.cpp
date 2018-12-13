@@ -99,17 +99,6 @@ QVector4D Matrix4x4::operator*(const QVector4D &vec) {
     );
 }
 
-QString Matrix4x4::toString() {
-    QString res;
-    for(int i = 0; i < 16; i++) {
-        res.append(QString::number(_matrix[i]) + " ");
-        if((i + 1) % 4 == 0) {
-            res.append("    ");
-        }
-    }
-    return res;
-}
-
 Matrix4x4 & Matrix4x4::inverse() {
     Matrix4x4 AT;
     double * inv = AT._matrix, *m = _matrix;

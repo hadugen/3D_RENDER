@@ -26,13 +26,12 @@ public:
     ~MainWindow() override;
 
 private slots:
-    void renderObjOnFrame(Matrix4x4 matrix, QVector<AbstractGraphicalObject *> objects);
+    void renderObjectsOnFrame(Matrix4x4 matrix, QVector<AbstractGraphicalObject *> objects);
     void prepareFrame();
 
 private:
 
     QVector <AbstractGraphicalObject*> _objects;
-    QVector <AbstractGraphicalObject*> _lamps;
 
     QVector2D _deltaCameraPos;
     QVector3D _currentCameraPos;
@@ -46,20 +45,17 @@ private:
 
     QPointF _lastClickPos;
     Qt::MouseButton _lastButtonPressed;
-
     Lamp *_currentLamp = nullptr;
 
+    QTimer *_renderOneFrameTimer;
+    void drawFPS(int frameTime);
     QTime _lastFrameWasAt;
     uint _frameRate = 60;
 
-    QTimer *_renderOneFrameTimer;
-
-    void drawFPS(int frameTime);
-
     double getNormalForVector(const QVector3D &vec);
 
-    double getYAxisRotation();
-    double getXAxisRotation();
+    double getNewYAxisRotation();
+    double getNewXAxisRotation();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
