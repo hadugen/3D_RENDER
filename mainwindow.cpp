@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _renderOneFrameTimer = new QTimer;
     connect(_renderOneFrameTimer, SIGNAL(timeout()), this, SLOT(update()));
     _renderOneFrameTimer->setTimerType(Qt::PreciseTimer);
-    _renderOneFrameTimer->start(1000 / _frameRate);
+    _renderOneFrameTimer->start(1000 / _frameRate);                         // таймер обновления экрана
 }
 
 MainWindow::~MainWindow() {
