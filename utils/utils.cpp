@@ -104,22 +104,22 @@ QList <Dot3D> Utils::getDotsForLine(Dot3D beg, Dot3D end) {
     return result;
 }
 
-QVector3D Utils::worldToScreen(QVector3D point, Matrix4x4 & vp, QSize size) {
+QVector3D Utils::worldToScreen(QVector3D point, Matrix4x4 vp, QSize size) {
     QVector4D pos(point, 1);
     pos = vp * pos;
     float z = pos.z();
     pos = pos / pos.w();
-    pos.setX((((pos.x() + 1.f) * 0.5f) * size.width()));
-    pos.setY((((pos.y() + 1.f) * 0.5f) * size.height()));
+    pos.setX((((pos.x() + 1.0f) * 0.5f) * size.width()));
+    pos.setY((((pos.y() + 1.0f) * 0.5f) * size.height()));
     pos.setZ(z);
     return pos.toVector3D();
 }
 
-QVector3D Utils::screenToWorld(QVector3D point, Matrix4x4 & vp, QSize size) {
+QVector3D Utils::screenToWorld(QVector3D point, Matrix4x4 vp, QSize size) {
     QVector4D pos(point, 1);
     vp.inverse();
-    pos.setX(((pos.x() / ((float) size.width())) * 2.f) - 1.f);
-    pos.setY((((pos.y() / ((float) size.height())) * 2.f) - 1.f));
+    pos.setX(((pos.x() / ((float) size.width())) * 2.0f) - 1.0f);
+    pos.setY((((pos.y() / ((float) size.height())) * 2.0f) - 1.0f));
     pos = vp * pos;
     pos = pos / pos.w();
     return pos.toVector3D();

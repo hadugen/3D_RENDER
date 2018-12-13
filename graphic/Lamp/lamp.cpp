@@ -18,13 +18,11 @@ void Lamp::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
     painter.setPen(_color);
     painter.setBrush(_color);
     if(_isMoved) {
-        _newScreenPosition.setZ(3);
+        _newScreenPosition.setZ(2.5);
         _absolutePosition = Utils::screenToWorld(_newScreenPosition, viewProjection, image->size());
         _isMoved = false;
     }
     _screenPosition = Utils::worldToScreen(_absolutePosition, viewProjection, image->size());
-    QVector4D pos(_absolutePosition, 1);
-    pos = viewProjection * pos;
     Utils::addBorderCircle(_screenPosition, _radius, lines);
     std::map<int, LineX>::iterator it;;
     for(it = lines.begin(); it != lines.end(); it++) {

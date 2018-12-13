@@ -45,8 +45,8 @@ public:
     static void shadeLine(Dot3D beg, Dot3D end, QVector3D normal, QImage *image);
     static void addBorderPixel(Dot3D point, std::map<int, LineX> &lines);
     static QList<Dot3D> getDotsForLine(Dot3D beg, Dot3D end);
-    static QVector3D worldToScreen(QVector3D point, Matrix4x4 &vp, QSize size);
-    static QVector3D screenToWorld(QVector3D point, Matrix4x4 &vp, QSize size);
+    static QVector3D worldToScreen(QVector3D point, Matrix4x4 vp, QSize size);
+    static QVector3D screenToWorld(QVector3D point, Matrix4x4 vp, QSize size);
     static void addBorderPixel(QVector3D point, std::map<int, LineX> &lines);
     static void bresCircle(QVector3D point, int x, int y, std::map<int, LineX> &lines);
     static void addBorderCircle(QVector3D center, int radius, std::map<int, LineX> &lines);
