@@ -39,6 +39,7 @@ void Utils::shadeLine(Dot3D beg, Dot3D end, QVector3D normal, QImage *image) {
     QList <Dot3D> dotList = getDotsForLine(beg, end);
     QColor color(Qt::white);
     for(Dot3D dot : dotList) {
+        color = Lamp::calcSummaryLight(dot.absolute, normal);
         image->setPixelColor(dot.cam.x(), dot.cam.y(), color);
     }
 }
@@ -158,5 +159,14 @@ void Utils::addBorderCircle(QVector3D center, int radius, std::map<int, LineX>& 
         }
         else
             d = d + 4 * x + 6;
+    }
+}
+
+bool Utils::IsLit(QVector3D normal, QVector3D point0, QVector3D point) {
+    float value = normal.x() * (point.x() - point0.x()) + normal.y() * (point.y() - point0.y()) + normal.z() * (point.z() - point0.z());
+    if(value > 0) {
+        return true;
+    } else {
+        return false;
     }
 }

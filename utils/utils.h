@@ -7,6 +7,7 @@
 #include <QColor>
 #include <QImage>
 #include <QList>
+#include <Lamp/lamp.h>
 
 #include "matrix4x4.h"
 
@@ -50,6 +51,7 @@ public:
     static void addBorderPixel(QVector3D point, std::map<int, LineX> &lines);
     static void bresCircle(QVector3D point, int x, int y, std::map<int, LineX> &lines);
     static void addBorderCircle(QVector3D center, int radius, std::map<int, LineX> &lines);
+    static bool IsLit(QVector3D normal, QVector3D point0, QVector3D point);
 };
 
 #endif // UTILS_H
