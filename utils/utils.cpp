@@ -1,5 +1,5 @@
 #include "utils.h"
-
+#include <QDebug>
 Utils::Utils() {
 
 }
@@ -68,14 +68,13 @@ QList <GuroDot> Utils::getDotsForLine(GuroDot beg, GuroDot end) {
     QVector3D absolutePoint = beg.absolute;
     QVector <QVector4D> curIntens = beg.intens;
     QVector <QVector4D> deltaIntens = end.intens;
-    for(int i=0;i < beg.intens.size(); i++) {
-        const QVector4D & dlt = deltaIntens[i];
-        const QVector4D & begInt = beg.intens[i];
+    for(int i = 0; i < beg.intens.size(); i++) {
+        QVector4D dlt = deltaIntens[i];
+        QVector4D begInt = beg.intens[i];
         deltaIntens[i] = (dlt - begInt);
         deltaIntens[i] = deltaIntens[i] / fdx;
     }
-    for (int x = int(beg.cam.x() + 0.5); x <= int(end.cam.x() + 0.5); x++, z += zstep, absolutePoint += delta)
-    {
+    for (int x = int(beg.cam.x() + 0.5); x <= int(end.cam.x() + 0.5); x++, z += zstep, absolutePoint += delta) {
         QVector3D camPoint(steep ? y : x, steep ? x : y, z);
         result.push_back(GuroDot(absolutePoint ,camPoint, curIntens));
         error -= dy;

@@ -1,5 +1,5 @@
 #include "cube.h"
-
+#include <QDebug>
 Cube::Cube() {
     addVerts();
     addEdges();
@@ -58,14 +58,15 @@ void Cube::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
 }
 
 void Cube::drawGouraudShadedFaces(QVector<QVector4D> dots) {
-    QVector<QVector3D> normalsFace;
-    QVector<QVector3D> normalsVerts(_verts.size(), QVector3D(0.f,0.f,0.f));
-    QVector<QVector<QVector4D>> intensVerts;
-    for (QVector3D face : _faces) {
+    QVector <QVector3D> normalsFace;
+    QVector <QVector3D> normalsVerts(_verts.size(), QVector3D(0.f,0.f,0.f));
+    QVector <QVector<QVector4D>> intensVerts;
+    for (QVector3D face : _faces)
+    {
         QVector3D absoluteFace[] = {
             _verts[face.x()],
             _verts[face.y()],
-            _verts[face.x()]
+            _verts[face.z()]
         };
         QVector3D normal = QVector3D::normal(
                 QVector3D(absoluteFace[1].x() - absoluteFace[0].x(), absoluteFace[1].y() - absoluteFace[0].y(), absoluteFace[1].z() - absoluteFace[0].z()),
@@ -76,16 +77,17 @@ void Cube::drawGouraudShadedFaces(QVector<QVector4D> dots) {
         normalsVerts[face.z()] += normal;
         normalsFace.push_back(normal);
     }
-    for (int i=0; i < _verts.size(); i++) {
-        QVector3D worldPos = _verts[i];
-        QVector3D normal = normalsVerts[i];
-        QVector <QVector4D> intens = Lamp::getIntensVector(worldPos, normal);
+    for (int i = 0; i < _verts.size(); i++) {
+        QVector3D & worldPos = _verts[i];
+        QVector3D & normal = normalsVerts[i];
+        QVector<QVector4D> intens;
+        intens = Lamp::getIntensVector(worldPos, normal);
         intensVerts.push_back(intens);
     }
     for (QVector3D face : _faces) {
         QVector3D worldFace[] = {_verts[face.x()], _verts[face.y()], _verts[face.z()]};
         QVector3D camFace[] = {dots[face.x()].toVector3D(), dots[face.y()].toVector3D(), dots[face.z()].toVector3D()};
-        QVector <QVector4D> intens[] = {intensVerts[face.x()], intensVerts[face.y()], intensVerts[face.z()]};
+        QVector<QVector4D> intens[] = {intensVerts[face.x()], intensVerts[face.y()], intensVerts[face.z()]};
         shadeGouraudFaces(worldFace, camFace, intens, _image);
     }
 }

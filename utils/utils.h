@@ -73,7 +73,7 @@ struct Dot3D {
 };
 
 struct GuroDot {
-    GuroDot(QVector3D world, QVector3D cam, QVector<QVector4D>& intens) {
+    GuroDot(QVector3D world, QVector3D cam, QVector<QVector4D> intens) {
         this->absolute = world;
         this->cam = cam;
         this->intens = intens;

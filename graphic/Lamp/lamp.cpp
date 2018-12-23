@@ -174,8 +174,8 @@ QColor Lamp::calcSummaryLight(QVector3D worldPos, QVector3D normal) {
     return QColor(std::min(colorVector.x(), 255.f), std::min(colorVector.y(), 255.f), std::min(colorVector.z(), 255.f));
 }
 
-QVector <QVector4D> Lamp::getIntensVector(QVector3D worldPos, QVector3D normal) {
-    QVector <QVector4D> intens;
+QVector<QVector4D> Lamp::getIntensVector(QVector3D worldPos, QVector3D normal) {
+    QVector<QVector4D> intens;
     for(Lamp *lamp : _lamps) {
         intens.push_back(lamp->calcLightOnPoint(worldPos, normal));
     }
