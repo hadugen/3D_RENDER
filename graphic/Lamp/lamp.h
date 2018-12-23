@@ -3,6 +3,13 @@
 
 #include <abstractgraphicalobject.h>
 
+enum ShadingType {
+    NO_SHADING,
+    DEFAULT_SHADING,
+    GOURAUD_SHADING,
+    PHONG_SHADING
+};
+
 class Lamp : public AbstractGraphicalObject
 {
 public:
@@ -15,8 +22,13 @@ public:
     static QColor calcSummaryLight(QVector3D worldPos, QVector3D normal);
     QVector4D calcLightOnPoint(QVector3D worldPos, QVector3D normal);
     virtual void renderOnImage(Matrix4x4 viewProjection, QImage *image) override;
+    static ShadingType shadingType();
+    static void setShadingType(ShadingType type);
+    static QVector<QVector4D> getIntensVector(QVector3D worldPos, QVector3D normal);
+    static QVector3D camPos;
 
 private:
+
     QVector3D _absolutePosition;
     QVector3D _screenPosition;
     QVector3D _newScreenPosition;
@@ -25,7 +37,10 @@ private:
     double _radius;
     double _squaredRadius;
     QColor _color;
+
     static QVector <Lamp*> _lamps;
+
+    static ShadingType _shadingType;
 
     QVector2D _intensity;
     QVector2D _attenuation;
@@ -35,6 +50,8 @@ private:
     void addFaces() override;
     void bresCircle(QVector3D point, int x, int y, std::map<int, LineX> &lines);
     void addBorderCircle(QVector3D center, int radius, std::map<int, LineX> &lines);
+    QVector4D calcPhongLightOnPoint(QVector3D worldPos, QVector3D normal);
+    QVector4D calcDefaultLightOnPoint(QVector3D worldPos, QVector3D normal);
 };
 
 #endif // LAMP_H

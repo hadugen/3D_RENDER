@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setFixedSize(755, 755);
     setCursor(Qt::OpenHandCursor);
 
+    Lamp::camPos = _currentCameraPos;
+
     _objects.append(new Cube);
     _objects.append(new Lamp(QVector3D(0.f, 0.0f, 1.5f), 10.0, Qt::red));
     _objects.append(new Lamp(QVector3D(-1.5f, 0.f, 0.f), 10.0, Qt::green));
@@ -95,6 +97,18 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         _frameRate = (_frameRate == 10) ? 10 : _frameRate - 10;
         _renderOneFrameTimer->setInterval(1000 / _frameRate);
         break;
+    case Qt::Key_N:
+        Lamp::setShadingType(NO_SHADING);
+        break;
+    case Qt::Key_D:
+        Lamp::setShadingType(DEFAULT_SHADING);
+        break;
+    case Qt::Key_G:
+        Lamp::setShadingType(GOURAUD_SHADING);
+        break;
+    case Qt::Key_P:
+        Lamp::setShadingType(PHONG_SHADING);
+        break;
     default:
         break;
     }
@@ -146,6 +160,7 @@ void MainWindow::prepareFrame() {
     double cameraYCoord = zoom * sin(_xAxisRotation);
     double cameraZCoord = -zoom * cos(_xAxisRotation) * sin(_yAxisRotation);
     _currentCameraPos = QVector3D(cameraXCoord, cameraYCoord, cameraZCoord);
+    Lamp::camPos = _currentCameraPos;
     QVector3D objectPosition(0.0f, 0.0f, 0.0f);
     matView.lookAt(_currentCameraPos, objectPosition, cameraUp);
     double aspectRatio = size.height() / size.width();

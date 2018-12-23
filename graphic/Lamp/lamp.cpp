@@ -1,6 +1,16 @@
 #include "lamp.h"
 
 QVector <Lamp*> Lamp::_lamps;
+ShadingType Lamp::_shadingType = NO_SHADING;
+QVector3D Lamp::camPos;
+
+void Lamp::setShadingType(ShadingType type) {
+    _shadingType = type;
+}
+
+ShadingType Lamp::shadingType() {
+    return _shadingType;
+}
 
 Lamp::Lamp(QVector3D position, double radius, QColor color) {
     _absolutePosition = position;
@@ -67,7 +77,7 @@ void Lamp::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
     }
     _screenPosition = Utils::worldToScreen(_absolutePosition, viewProjection, image->size());
     addBorderCircle(_screenPosition, _radius, lines);
-    std::map<int, LineX>::iterator it;;
+    std::map<int, LineX>::iterator it;
     for(it = lines.begin(); it != lines.end(); it++) {
         int y = it->first;
         LineX line = it->second;
@@ -102,8 +112,8 @@ Lamp * Lamp::findLampByCoords(double x, double y) {
     return nullptr;
 }
 
-QVector4D Lamp::calcLightOnPoint(QVector3D worldPos, QVector3D normal) {
-    QVector3D lightDirection = worldPos - _absolutePosition;
+QVector4D Lamp::calcPhongLightOnPoint(QVector3D worldPos, QVector3D normal) {
+   QVector3D lightDirection = worldPos - _absolutePosition;
     float dist2 = lightDirection.lengthSquared();
     if (dist2 > _squaredRadius) {
         return QVector4D();
@@ -112,10 +122,46 @@ QVector4D Lamp::calcLightOnPoint(QVector3D worldPos, QVector3D normal) {
     lightDirection.normalize();
     QVector4D ambientColor = QVector4D(_color.red(), _color.green(), _color.blue(), 1.f) * _intensity.x();
     float diffuseFactor = QVector3D::dotProduct(normal, -lightDirection);
+    QVector4D diffuseColor;
+    QVector4D specularColor;
+    if (diffuseFactor > 0) {
+        diffuseColor = QVector4D(_color.red(), _color.green(), _color.blue(), 1.0) * _intensity.y() * diffuseFactor;
+        QVector3D vertexToEye = (worldPos - camPos).normalized();
+        QVector3D lightReflect = (Utils::reflect(lightDirection, normal)).normalized();
+        float specularFactor = QVector3D::dotProduct(vertexToEye, lightReflect);
+        specularFactor = powf(specularFactor, 0.3f);
+        if (specularFactor > 0.0) {
+            specularColor = QVector4D(_color.red(), _color.green(), _color.blue(), 1.0) * (0.2f * specularFactor);
+        }
+    }
+    QVector4D color = ambientColor + diffuseColor;
+    float attenuation = 1.0 + this->_attenuation.x() * dist + this->_attenuation.y() * dist2;
+    attenuation = std::max(1.f, attenuation);
+    return color / attenuation;
+}
+
+QVector4D Lamp::calcDefaultLightOnPoint(QVector3D worldPos, QVector3D normal) {
+    QVector3D lightDirection = worldPos - _absolutePosition;
+    float dist2 = lightDirection.lengthSquared();
+    if (dist2 > _squaredRadius) {
+        return QVector4D();
+    }
+    float dist = sqrt(dist2);
+    lightDirection.normalize();
+    float diffuseFactor = QVector3D::dotProduct(normal, -lightDirection);
     QVector4D diffuseColor = QVector4D(_color.red(), _color.green(), _color.blue(), 1.0) * _intensity.y() * 2.f * diffuseFactor;
-    float attenuation = 1.0 + _attenuation.x() * dist + _attenuation.y() * dist2;
+    float attenuation = 1.0 + this->_attenuation.x() * dist + this->_attenuation.y() * dist2;
     attenuation = std::max(1.f, attenuation);
     return diffuseColor / attenuation;
+}
+
+QVector4D Lamp::calcLightOnPoint(QVector3D worldPos, QVector3D normal) {
+    switch (Lamp::_shadingType) {
+    case DEFAULT_SHADING:   return calcDefaultLightOnPoint(worldPos, normal);
+    case PHONG_SHADING:     return calcDefaultLightOnPoint(worldPos, normal);
+    case GOURAUD_SHADING:   return calcPhongLightOnPoint(worldPos, normal);
+    default:                return calcPhongLightOnPoint(worldPos, normal);
+    }
 }
 
 QColor Lamp::calcSummaryLight(QVector3D worldPos, QVector3D normal) {
@@ -126,4 +172,12 @@ QColor Lamp::calcSummaryLight(QVector3D worldPos, QVector3D normal) {
         }
     }
     return QColor(std::min(colorVector.x(), 255.f), std::min(colorVector.y(), 255.f), std::min(colorVector.z(), 255.f));
+}
+
+QVector <QVector4D> Lamp::getIntensVector(QVector3D worldPos, QVector3D normal) {
+    QVector <QVector4D> intens;
+    for(Lamp *lamp : _lamps) {
+        intens.push_back(lamp->calcLightOnPoint(worldPos, normal));
+    }
+    return intens;
 }

@@ -37,7 +37,9 @@ protected:
     virtual void addFaces() = 0;
 
     void addBorderPixel(Dot3D point, std::map<int, LineX> &lines);
+    void addBorderPixel(GuroDot point, std::map<int, LineGuroX> &lines);
     void addBorderPixel(QVector3D point, std::map<int, LineX> &lines);
+    void addBorderPixel(FongDot point, std::map<int, LineFongX> &lines);
 };
 
 #endif // ABSTRACTGRAPHICALOBJECT_H
