@@ -21,15 +21,15 @@ private:
     void drawFace(const QVector<QVector4D> &dots, QVector3D *absoluteFace, QVector3D *camRelativeFace);
     void drawGouraudShadedFaces(QVector <QVector4D> dots);
     void drawPhongShadedFaces(QVector <QVector4D> dots);
-    void shadeFongFace(QVector3D *absoluteFace, QVector3D *camFace, QVector3D *normals, QImage *image);
-    void shadeFong(std::map<int, LineFongX>& lines, QVector3D* absoluteFace, QImage * image);
-    void addBorderLine(Dot3D beg, Dot3D end, std::map<int, LineX> &lines);
-    void defaultShade(std::map<int, LineX> &lines, QVector3D *absoluteFace, QImage *image);
-    void shadeLine(Dot3D beg, Dot3D end, QVector3D normal, QImage *image);
-    void addBorderLine(GuroDot beg, GuroDot end, std::map<int, LineGuroX> &lines);
-    void addBorderLine(FongDot beg, FongDot end, std::map<int, LineFongX> &lines);
-    void shadeLine(GuroDot beg, GuroDot end, QImage *image);
-    void shadeLine(FongDot beg, FongDot end, QImage *image);
+    void shadePhongFace(QVector3D *absoluteFace, QVector3D *camFace, QVector3D *normals, QImage *image);
+    void shadePhong(std::map<int, LinePhong>& lines, QVector3D* absoluteFace, QImage * image);
+    void addLine(Dot beg, Dot end, std::map<int, Line> &lines);
+    void defaultShade(std::map<int, Line> &lines, QVector3D *absoluteFace, QImage *image);
+    void shadeLine(Dot beg, Dot end, QVector3D normal, QImage *image);
+    void addLine(GouraudDot beg, GouraudDot end, std::map<int, LineGouraud> &lines);
+    void addLine(PhongDot beg, PhongDot end, std::map<int, LinePhong> &lines);
+    void shadeLine(GouraudDot beg, GouraudDot end, QImage *image);
+    void shadeLine(PhongDot beg, PhongDot end, QImage *image);
     void shadeGouraudFaces(QVector3D *absoluteFace, QVector3D *camFace, QVector<QVector4D> *intens, QImage *image);
 };
 

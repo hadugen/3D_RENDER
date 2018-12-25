@@ -12,10 +12,9 @@ public:
     ~Matrix4x4();
     Matrix4x4 & toIdentityMatrix();
     Matrix4x4 & lookAt(QVector3D cameraPosition, QVector3D target, QVector3D cameraUp);
-    Matrix4x4 & toProjectionMatrix(double d, double aspectRatio);
+    Matrix4x4 & toProjectionMatrix(double z, double aspectRatio);
     Matrix4x4 & toViewPortMatrix(int x, int y, int w, int h);
     Matrix4x4 & inverse();
-
     bool operator==(const Matrix4x4 & second);
     Matrix4x4 & operator= (const Matrix4x4 & second);
     Matrix4x4 operator* (const Matrix4x4 & second);

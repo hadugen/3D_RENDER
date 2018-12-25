@@ -28,9 +28,9 @@ Matrix4x4 & Matrix4x4::toViewPortMatrix(int x, int y, int w, int h) {
     return *this;
 }
 
-Matrix4x4 & Matrix4x4::toProjectionMatrix(double d, double aspectRatio){
+Matrix4x4 & Matrix4x4::toProjectionMatrix(double z, double aspectRatio){
     toIdentityMatrix();
-    double scaleCoef = 1.0 / d;
+    double scaleCoef = 1.0 / z;
     _matrix[0] = scaleCoef;
     _matrix[5] = aspectRatio * scaleCoef;
     _matrix[14] = -scaleCoef;

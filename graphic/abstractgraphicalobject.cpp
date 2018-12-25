@@ -20,87 +20,87 @@ QVector<QVector3D> AbstractGraphicalObject::faces() const {
     return _faces;
 }
 
-void AbstractGraphicalObject::addBorderPixel(Dot3D point, std::map<int, LineX>& lines) {
-    int x = static_cast<int>(point.cam.x() + 0.5);
-    int y = static_cast<int>(point.cam.y() + 0.5);
-    float z = point.cam.z();
-    std::map<int, LineX>::iterator it;
+void AbstractGraphicalObject::addPixel(Dot dot, std::map<int, Line>& lines) {
+    int x = static_cast<int>(dot.cam.x() + 0.5);
+    int y = static_cast<int>(dot.cam.y() + 0.5);
+    float z = dot.cam.z();
+    std::map<int, Line>::iterator it;
     it = lines.find(y);
     if(it != lines.end()) {
-        LineX line = it->second;
+        Line line = it->second;
         if(x < line.x1) {
             line.x1 = x;
             line.z1 = z;
-            line.absoluteBeg = point.absolute;
+            line.absoluteBeg = dot.absolute;
         } else if( x > line.x2) {
             line.x2 = x;
             line.z2 = z;
-            line.absoluteEnd = point.absolute;
+            line.absoluteEnd = dot.absolute;
         }
         lines[y] = line;
     } else {
-        LineX line(x, x, z, z, point.absolute, point.absolute);
+        Line line(x, x, z, z, dot.absolute, dot.absolute);
         lines[y] = line;
     }
 }
 
-void AbstractGraphicalObject::addBorderPixel(GuroDot point, std::map<int, LineGuroX>& lines) {
-    int x = static_cast<int>(point.cam.x() + 0.5);
-    int y = static_cast<int>(point.cam.y() + 0.5);
-    float z = point.cam.z();
-    std::map<int, LineGuroX>::iterator it;
+void AbstractGraphicalObject::addPixel(GouraudDot dot, std::map<int, LineGouraud>& lines) {
+    int x = static_cast<int>(dot.cam.x() + 0.5);
+    int y = static_cast<int>(dot.cam.y() + 0.5);
+    float z = dot.cam.z();
+    std::map<int, LineGouraud>::iterator it;
     it = lines.find(y);
     if(it != lines.end()) {
-        LineGuroX line = it->second;
+        LineGouraud line = it->second;
         if(x < line.x1) {
             line.x1 = x;
             line.z1 = z;
-            line.absoluteBeg = point.absolute;
-            line.begIntens = point.intens;
+            line.absoluteBeg = dot.absolute;
+            line.begIntens = dot.intens;
         } else if( x > line.x2) {
             line.x2 = x;
             line.z2 = z;
-            line.absoluteEnd = point.absolute;
-            line.endIntens = point.intens;
+            line.absoluteEnd = dot.absolute;
+            line.endIntens = dot.intens;
         }
         lines[y] = line;
     } else {
-        LineGuroX line(x, x, z, z, point.absolute, point.absolute);
-        line.begIntens = point.intens;
-        line.endIntens = point.intens;
+        LineGouraud line(x, x, z, z, dot.absolute, dot.absolute);
+        line.begIntens = dot.intens;
+        line.endIntens = dot.intens;
         lines[y] = line;
     }
 }
 
-void AbstractGraphicalObject::addBorderPixel(FongDot point, std::map<int, LineFongX>& lines) {
-    int x = static_cast<int>(point.cam.x() + 0.5);
-    int y = static_cast<int>(point.cam.y() + 0.5);
-    float z = point.cam.z();
-    std::map<int, LineFongX>::iterator it;
+void AbstractGraphicalObject::addPixel(PhongDot dot, std::map<int, LinePhong>& lines) {
+    int x = static_cast<int>(dot.cam.x() + 0.5);
+    int y = static_cast<int>(dot.cam.y() + 0.5);
+    float z = dot.cam.z();
+    std::map<int, LinePhong>::iterator it;
     it = lines.find(y);
     if(it != lines.end()) {
-        LineFongX line = it->second;
+        LinePhong line = it->second;
         if(x < line.x1) {
             line.x1 = x;
             line.z1 = z;
-            line.absoluteBeg = point.absolute;
-            line.begNormal = point.normal;
+            line.absoluteBeg = dot.absolute;
+            line.begNormal = dot.normal;
         } else if(x > line.x2) {
             line.x2 = x;
             line.z2 = z;
-            line.absoluteEnd = point.absolute;
-            line.endNormal = point.normal;
+            line.absoluteEnd = dot.absolute;
+            line.endNormal = dot.normal;
         }
         lines[y] = line;
     } else {
-        LineFongX line(x, x, z, z, point.absolute, point.absolute);
-        line.begNormal = point.normal;
-        line.endNormal = point.normal;
+        LinePhong line(x, x, z, z, dot.absolute, dot.absolute);
+        line.begNormal = dot.normal;
+        line.endNormal = dot.normal;
         lines[y] = line;
     }
 }
 
-void AbstractGraphicalObject::addBorderPixel(QVector3D point, std::map<int, LineX>& lines) {
-    Dot3D dot(QVector3D(0.f, 0.f, 0.f), point);
-    addBorderPixel(dot, lines);
+void AbstractGraphicalObject::addPixel(QVector3D point, std::map<int, Line>& lines) {
+    Dot dot(QVector3D(0.f, 0.f, 0.f), point);
+    addPixel(dot, lines);
 }

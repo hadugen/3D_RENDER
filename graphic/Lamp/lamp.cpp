@@ -27,28 +27,28 @@ Lamp::~Lamp() {
     _lamps.removeOne(this);
 }
 
-void Lamp::bresCircle(QVector3D point, int x, int y, std::map<int, LineX>& lines)
+void Lamp::addCircle(QVector3D point, int x, int y, std::map<int, Line>& lines)
 {
     int xc = static_cast<int>(point.x());
     int yc = static_cast<int>(point.y());
     float zc = point.z();
-    addBorderPixel(QVector3D(xc + x, yc + y, zc), lines);
-    addBorderPixel(QVector3D(xc - x, yc + y, zc), lines);
-    addBorderPixel(QVector3D(xc + x, yc - y, zc), lines);
-    addBorderPixel(QVector3D(xc - x, yc - y, zc), lines);
-    addBorderPixel(QVector3D(xc + y, yc + x, zc), lines);
-    addBorderPixel(QVector3D(xc - y, yc + x, zc), lines);
-    addBorderPixel(QVector3D(xc + y, yc - x, zc), lines);
-    addBorderPixel(QVector3D(xc - y, yc - x, zc), lines);
+    addPixel(QVector3D(xc + x, yc + y, zc), lines);
+    addPixel(QVector3D(xc - x, yc + y, zc), lines);
+    addPixel(QVector3D(xc + x, yc - y, zc), lines);
+    addPixel(QVector3D(xc - x, yc - y, zc), lines);
+    addPixel(QVector3D(xc + y, yc + x, zc), lines);
+    addPixel(QVector3D(xc - y, yc + x, zc), lines);
+    addPixel(QVector3D(xc + y, yc - x, zc), lines);
+    addPixel(QVector3D(xc - y, yc - x, zc), lines);
 }
 
-void Lamp::addBorderCircle(QVector3D center, int radius, std::map<int, LineX>& lines)
+void Lamp::addBorderCircle(QVector3D center, int radius, std::map<int, Line>& lines)
 {
     int x = 0;
     int y = radius;
     int d = 3 - 2 * radius;
     while (y >= x) {
-        bresCircle(center, x, y, lines);
+        addCircle(center, x, y, lines);
         x++;
         if (d > 0) {
             y--;
@@ -66,7 +66,7 @@ void Lamp::moveTo(int x, int y) {
 }
 
 void Lamp::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
-    std::map<int, LineX> lines;
+    std::map<int, Line> lines;
     QPainter painter(image);
     painter.setPen(_color);
     painter.setBrush(_color);
@@ -77,10 +77,10 @@ void Lamp::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
     }
     _screenPosition = Utils::worldToScreen(_absolutePosition, viewProjection, image->size());
     addBorderCircle(_screenPosition, _radius, lines);
-    std::map<int, LineX>::iterator it;
+    std::map<int, Line>::iterator it;
     for(it = lines.begin(); it != lines.end(); it++) {
         int y = it->first;
-        LineX line = it->second;
+        Line line = it->second;
         painter.drawLine(line.x1, y, line.x2, y);
     }
 }
@@ -112,8 +112,8 @@ Lamp * Lamp::findLampByCoords(double x, double y) {
     return nullptr;
 }
 
-QVector4D Lamp::calcPhongLightOnPoint(QVector3D worldPos, QVector3D normal) {
-   QVector3D lightDirection = worldPos - _absolutePosition;
+QVector4D Lamp::calcPhongLightOnPoint(QVector3D absolutePos, QVector3D normal) {
+   QVector3D lightDirection = absolutePos - _absolutePosition;
     float dist2 = lightDirection.lengthSquared();
     if (dist2 > _squaredRadius) {
         return QVector4D();
@@ -126,7 +126,7 @@ QVector4D Lamp::calcPhongLightOnPoint(QVector3D worldPos, QVector3D normal) {
     QVector4D specularColor;
     if (diffuseFactor > 0) {
         diffuseColor = QVector4D(_color.red(), _color.green(), _color.blue(), 1.0) * _intensity.y() * diffuseFactor;
-        QVector3D vertexToEye = (worldPos - camPos).normalized();
+        QVector3D vertexToEye = (absolutePos - camPos).normalized();
         QVector3D lightReflect = (Utils::reflect(lightDirection, normal)).normalized();
         float specularFactor = QVector3D::dotProduct(vertexToEye, lightReflect);
         specularFactor = powf(specularFactor, 0.3f);
@@ -140,8 +140,8 @@ QVector4D Lamp::calcPhongLightOnPoint(QVector3D worldPos, QVector3D normal) {
     return color / attenuation;
 }
 
-QVector4D Lamp::calcDefaultLightOnPoint(QVector3D worldPos, QVector3D normal) {
-    QVector3D lightDirection = worldPos - _absolutePosition;
+QVector4D Lamp::calcDefaultLightOnPoint(QVector3D absolutePos, QVector3D normal) {
+    QVector3D lightDirection = absolutePos - _absolutePosition;
     float dist2 = lightDirection.lengthSquared();
     if (dist2 > _squaredRadius) {
         return QVector4D();
@@ -155,29 +155,29 @@ QVector4D Lamp::calcDefaultLightOnPoint(QVector3D worldPos, QVector3D normal) {
     return diffuseColor / attenuation;
 }
 
-QVector4D Lamp::calcLightOnPoint(QVector3D worldPos, QVector3D normal) {
+QVector4D Lamp::calcLightOnPoint(QVector3D absolutePos, QVector3D normal) {
     switch (Lamp::_shadingType) {
-    case DEFAULT_SHADING:   return calcDefaultLightOnPoint(worldPos, normal);
-    case PHONG_SHADING:     return calcDefaultLightOnPoint(worldPos, normal);
-    case GOURAUD_SHADING:   return calcPhongLightOnPoint(worldPos, normal);
-    default:                return calcPhongLightOnPoint(worldPos, normal);
+    case DEFAULT_SHADING:   return calcDefaultLightOnPoint(absolutePos, normal);
+    case PHONG_SHADING:     return calcDefaultLightOnPoint(absolutePos, normal);
+    case GOURAUD_SHADING:   return calcPhongLightOnPoint(absolutePos, normal);
+    default:                return calcPhongLightOnPoint(absolutePos, normal);
     }
 }
 
-QColor Lamp::calcSummaryLight(QVector3D worldPos, QVector3D normal) {
+QColor Lamp::calcSummaryLight(QVector3D absolutePos, QVector3D normal) {
     QVector4D colorVector;
     for(Lamp *lamp : _lamps) {
-        if(Utils::IsLit(normal, worldPos, lamp->position())) {
-            colorVector = colorVector + lamp->calcLightOnPoint(worldPos, normal);
+        if(Utils::IsLit(normal, absolutePos, lamp->position())) {
+            colorVector = colorVector + lamp->calcLightOnPoint(absolutePos, normal);
         }
     }
     return QColor(std::min(colorVector.x(), 255.f), std::min(colorVector.y(), 255.f), std::min(colorVector.z(), 255.f));
 }
 
-QVector<QVector4D> Lamp::getIntensVector(QVector3D worldPos, QVector3D normal) {
+QVector<QVector4D> Lamp::getIntensVector(QVector3D absolutePos, QVector3D normal) {
     QVector<QVector4D> intens;
     for(Lamp *lamp : _lamps) {
-        intens.push_back(lamp->calcLightOnPoint(worldPos, normal));
+        intens.push_back(lamp->calcLightOnPoint(absolutePos, normal));
     }
     return intens;
 }

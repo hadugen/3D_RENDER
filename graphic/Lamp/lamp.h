@@ -19,12 +19,12 @@ public:
     static Lamp * findLampByCoords(double x, double y);
     void moveTo(int x, int y);
     QVector3D position();
-    static QColor calcSummaryLight(QVector3D worldPos, QVector3D normal);
-    QVector4D calcLightOnPoint(QVector3D worldPos, QVector3D normal);
+    static QColor calcSummaryLight(QVector3D absolutePos, QVector3D normal);
+    QVector4D calcLightOnPoint(QVector3D absolutePos, QVector3D normal);
     virtual void renderOnImage(Matrix4x4 viewProjection, QImage *image) override;
     static ShadingType shadingType();
     static void setShadingType(ShadingType type);
-    static QVector<QVector4D> getIntensVector(QVector3D worldPos, QVector3D normal);
+    static QVector<QVector4D> getIntensVector(QVector3D absolutePos, QVector3D normal);
     static QVector3D camPos;
 
 private:
@@ -48,10 +48,10 @@ private:
     void addVerts() override;
     void addEdges() override;
     void addFaces() override;
-    void bresCircle(QVector3D point, int x, int y, std::map<int, LineX> &lines);
-    void addBorderCircle(QVector3D center, int radius, std::map<int, LineX> &lines);
-    QVector4D calcPhongLightOnPoint(QVector3D worldPos, QVector3D normal);
-    QVector4D calcDefaultLightOnPoint(QVector3D worldPos, QVector3D normal);
+    void addCircle(QVector3D point, int x, int y, std::map<int, Line> &lines);
+    void addBorderCircle(QVector3D center, int radius, std::map<int, Line> &lines);
+    QVector4D calcPhongLightOnPoint(QVector3D absolutePos, QVector3D normal);
+    QVector4D calcDefaultLightOnPoint(QVector3D absolutePos, QVector3D normal);
 };
 
 #endif // LAMP_H

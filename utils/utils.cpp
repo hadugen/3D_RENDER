@@ -4,8 +4,8 @@ Utils::Utils() {
 
 }
 
-QList <Dot3D> Utils::getDotsForLine(Dot3D beg, Dot3D end) {
-    QList <Dot3D> result;
+QList <Dot> Utils::getDotsForLine(Dot beg, Dot end) {
+    QList <Dot> result;
     bool steep = abs(end.cam.y() - beg.cam.y()) > abs(end.cam.x() - beg.cam.x());
     if (steep) {
         float temp = beg.cam.x();
@@ -31,7 +31,7 @@ QList <Dot3D> Utils::getDotsForLine(Dot3D beg, Dot3D end) {
     for (int x = int(beg.cam.x() + 0.5); x <= int(end.cam.x() + 0.5); x++, z += zstep, absolutePoint += delta)
     {
         QVector3D camPoint(steep ? y : x, steep ? x : y, z);
-        result.push_back(Dot3D(absolutePoint ,camPoint));
+        result.push_back(Dot(absolutePoint ,camPoint));
         error -= dy;
         if (error < 0) {
             y += ystep;
@@ -41,8 +41,8 @@ QList <Dot3D> Utils::getDotsForLine(Dot3D beg, Dot3D end) {
     return result;
 }
 
-QList <GuroDot> Utils::getDotsForLine(GuroDot beg, GuroDot end) {
-    QList <GuroDot> result;
+QList <GouraudDot> Utils::getDotsForLine(GouraudDot beg, GouraudDot end) {
+    QList <GouraudDot> result;
     bool steep = abs(end.cam.y() - beg.cam.y()) > abs(end.cam.x() - beg.cam.x());
     if (steep) {
         float temp = beg.cam.x();
@@ -76,7 +76,7 @@ QList <GuroDot> Utils::getDotsForLine(GuroDot beg, GuroDot end) {
     }
     for (int x = int(beg.cam.x() + 0.5); x <= int(end.cam.x() + 0.5); x++, z += zstep, absolutePoint += delta) {
         QVector3D camPoint(steep ? y : x, steep ? x : y, z);
-        result.push_back(GuroDot(absolutePoint ,camPoint, curIntens));
+        result.push_back(GouraudDot(absolutePoint ,camPoint, curIntens));
         error -= dy;
         if (error < 0) {
             y += ystep;
@@ -89,8 +89,8 @@ QList <GuroDot> Utils::getDotsForLine(GuroDot beg, GuroDot end) {
     return result;
 }
 
-QList <FongDot> Utils::getDotsForLine(FongDot beg, FongDot end) {
-    QList <FongDot> result;
+QList <PhongDot> Utils::getDotsForLine(PhongDot beg, PhongDot end) {
+    QList <PhongDot> result;
     bool steep = abs(end.cam.y() - beg.cam.y()) > abs(end.cam.x() - beg.cam.x());
     if (steep) {
         float temp = beg.cam.x();
@@ -118,7 +118,7 @@ QList <FongDot> Utils::getDotsForLine(FongDot beg, FongDot end) {
     for (int x = int(beg.cam.x() + 0.5); x <= int(end.cam.x() + 0.5); x++, z += zstep, absolutePoint += delta)
     {
         QVector3D camPoint(steep ? y : x, steep ? x : y, z);
-        result.push_back(FongDot(absolutePoint, camPoint, curNormal));
+        result.push_back(PhongDot(absolutePoint, camPoint, curNormal));
         error -= dy;
         if (error < 0) {
             y += ystep;

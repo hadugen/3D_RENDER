@@ -10,9 +10,9 @@
 
 #include "matrix4x4.h"
 
-struct LineX {
-    LineX(){}
-    LineX(int x1, int x2, float z1, float z2, QVector3D absoluteBeg, QVector3D absoluteEnd) {
+struct Line {
+    Line(){}
+    Line(int x1, int x2, float z1, float z2, QVector3D absoluteBeg, QVector3D absoluteEnd) {
         this->x1 = x1;
         this->x2 = x2;
         this->z1 = z1;
@@ -27,9 +27,9 @@ struct LineX {
 };
 
 
-struct LineGuroX {
-    LineGuroX() {}
-    LineGuroX(int x1, int x2, float z1, float z2, QVector3D absoluteBeg, QVector3D absoluteEnd) {
+struct LineGouraud {
+    LineGouraud() {}
+    LineGouraud(int x1, int x2, float z1, float z2, QVector3D absoluteBeg, QVector3D absoluteEnd) {
         this->x1 = x1;
         this->x2 = x2;
         this->z1 = z1;
@@ -45,9 +45,9 @@ struct LineGuroX {
     QVector <QVector4D> endIntens;
 };
 
-struct LineFongX {
-    LineFongX() {}
-    LineFongX( int x1, int x2, float z1, float z2, QVector3D absoluteBeg, QVector3D absoluteEnd) {
+struct LinePhong {
+    LinePhong() {}
+    LinePhong( int x1, int x2, float z1, float z2, QVector3D absoluteBeg, QVector3D absoluteEnd) {
         this->x1 = x1;
         this->x2 = x2;
         this->z1 = z1;
@@ -63,8 +63,8 @@ struct LineFongX {
     QVector3D endNormal;
 };
 
-struct Dot3D {
-    Dot3D(QVector3D absolute, QVector3D cam) {
+struct Dot {
+    Dot(QVector3D absolute, QVector3D cam) {
         this->absolute = absolute;
         this->cam = cam;
     }
@@ -72,9 +72,9 @@ struct Dot3D {
     QVector3D cam;
 };
 
-struct GuroDot {
-    GuroDot(QVector3D world, QVector3D cam, QVector<QVector4D> intens) {
-        this->absolute = world;
+struct GouraudDot {
+    GouraudDot(QVector3D absolute, QVector3D cam, QVector<QVector4D> intens) {
+        this->absolute = absolute;
         this->cam = cam;
         this->intens = intens;
     }
@@ -83,9 +83,9 @@ struct GuroDot {
     QVector <QVector4D> intens;
 };
 
-struct FongDot {
-    FongDot(QVector3D world, QVector3D cam, QVector3D normal) {
-        this->absolute = world;
+struct PhongDot {
+    PhongDot(QVector3D absolute, QVector3D cam, QVector3D normal) {
+        this->absolute = absolute;
         this->cam = cam;
         this->normal = normal;
     }
@@ -97,13 +97,13 @@ struct FongDot {
 class Utils
 {
 public:
-    static QList<Dot3D> getDotsForLine(Dot3D beg, Dot3D end);
-    static QList<GuroDot> getDotsForLine(GuroDot beg, GuroDot end);
-    static QList<FongDot> getDotsForLine(FongDot beg, FongDot end);
+    static QList<Dot> getDotsForLine(Dot beg, Dot end);
+    static QList<GouraudDot> getDotsForLine(GouraudDot beg, GouraudDot end);
+    static QList<PhongDot> getDotsForLine(PhongDot beg, PhongDot end);
     static QVector3D worldToScreen(QVector3D point, Matrix4x4 vp, QSize size);
     static QVector3D screenToWorld(QVector3D point, Matrix4x4 vp, QSize size);
-    static void bresCircle(QVector3D point, int x, int y, std::map<int, LineX> &lines);
-    static void addBorderCircle(QVector3D center, int radius, std::map<int, LineX> &lines);
+    static void bresCircle(QVector3D point, int x, int y, std::map<int, Line> &lines);
+    static void addBorderCircle(QVector3D center, int radius, std::map<int, Line> &lines);
     static bool IsLit(QVector3D normal, QVector3D point0, QVector3D point);
     static QVector3D reflect(QVector3D incident, QVector3D normal);
 private:

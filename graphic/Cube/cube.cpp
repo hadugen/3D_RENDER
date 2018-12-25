@@ -1,5 +1,5 @@
 #include "cube.h"
-#include <QDebug>
+
 Cube::Cube() {
     addVerts();
     addEdges();
@@ -22,7 +22,6 @@ void Cube::drawEdges(QVector <QVector4D> dots) {
 
 void Cube::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
     this->_image = image;
-
     QVector <QVector4D> dots;
     Matrix4x4 matViewPort;
     matViewPort.toViewPortMatrix(
@@ -78,17 +77,17 @@ void Cube::drawGouraudShadedFaces(QVector<QVector4D> dots) {
         normalsFace.push_back(normal);
     }
     for (int i = 0; i < _verts.size(); i++) {
-        QVector3D & worldPos = _verts[i];
+        QVector3D & absolutePos = _verts[i];
         QVector3D & normal = normalsVerts[i];
         QVector<QVector4D> intens;
-        intens = Lamp::getIntensVector(worldPos, normal);
+        intens = Lamp::getIntensVector(absolutePos, normal);
         intensVerts.push_back(intens);
     }
     for (QVector3D face : _faces) {
-        QVector3D worldFace[] = {_verts[face.x()], _verts[face.y()], _verts[face.z()]};
+        QVector3D absoluteFace[] = {_verts[face.x()], _verts[face.y()], _verts[face.z()]};
         QVector3D camFace[] = {dots[face.x()].toVector3D(), dots[face.y()].toVector3D(), dots[face.z()].toVector3D()};
         QVector<QVector4D> intens[] = {intensVerts[face.x()], intensVerts[face.y()], intensVerts[face.z()]};
-        shadeGouraudFaces(worldFace, camFace, intens, _image);
+        shadeGouraudFaces(absoluteFace, camFace, intens, _image);
     }
 }
 
@@ -100,17 +99,17 @@ void Cube::shadeGouraudFaces(QVector3D * absoluteFace, QVector3D * camFace, QVec
         return;
     }
 
-    std::map<int, LineGuroX> lines;
-    GuroDot face[] = {GuroDot(absoluteFace[0], camFace[0], intens[0]), GuroDot(absoluteFace[1], camFace[1], intens[1]), GuroDot(absoluteFace[2], camFace[2], intens[2])};
-    addBorderLine(face[0], face[1], lines);
-    addBorderLine(face[1], face[2], lines);
-    addBorderLine(face[2], face[0], lines);
+    std::map<int, LineGouraud> lines;
+    GouraudDot face[] = {GouraudDot(absoluteFace[0], camFace[0], intens[0]), GouraudDot(absoluteFace[1], camFace[1], intens[1]), GouraudDot(absoluteFace[2], camFace[2], intens[2])};
+    addLine(face[0], face[1], lines);
+    addLine(face[1], face[2], lines);
+    addLine(face[2], face[0], lines);
 
-    std::map<int, LineGuroX>::iterator it;;
+    std::map<int, LineGouraud>::iterator it;;
     for(it = lines.begin(); it != lines.end(); it++) {
-        LineGuroX lin = it->second;
-        GuroDot beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1), lin.begIntens);
-        GuroDot end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2), lin.endIntens);
+        LineGouraud lin = it->second;
+        GouraudDot beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1), lin.begIntens);
+        GouraudDot end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2), lin.endIntens);
         shadeLine(beg, end, image);
     }
 }
@@ -133,34 +132,34 @@ void Cube::drawPhongShadedFaces(QVector <QVector4D> dots) {
         normalsVerts[face.z()] += normal * 0.5f;
     }
     for (QVector3D face : _faces) {
-        QVector3D worldFace[] = {_verts[face.x()], _verts[face.y()], _verts[face.z()]};
+        QVector3D absoluteFace[] = {_verts[face.x()], _verts[face.y()], _verts[face.z()]};
         QVector3D camFace[] = {dots[face.x()].toVector3D(), dots[face.y()].toVector3D(), dots[face.z()].toVector3D()};
         QVector3D normals[] = {normalsVerts[face.x()], normalsVerts[face.y()], normalsVerts[face.z()]};
-        shadeFongFace(worldFace, camFace, normals, _image);
+        shadePhongFace(absoluteFace, camFace, normals, _image);
     }
 }
 
-void Cube::shadeFongFace(QVector3D* absoluteFace, QVector3D* camFace, QVector3D* normals, QImage * image) {
+void Cube::shadePhongFace(QVector3D* absoluteFace, QVector3D* camFace, QVector3D* normals, QImage * image) {
     QVector2D vec1(camFace[1].x() - camFace[0].x(), camFace[1].y() - camFace[0].y());
     QVector2D vec2(camFace[2].x() - camFace[1].x(), camFace[2].y() - camFace[1].y());
     float z = vec1.x() * vec2.y() - vec2.x() * vec1.y();
     if(z > 0) {
         return;
     }
-    std::map<int, LineFongX> lines;
-    FongDot face[] = {FongDot(absoluteFace[0], camFace[0], normals[0]), FongDot(absoluteFace[1], camFace[1], normals[1]), FongDot(absoluteFace[2], camFace[2], normals[2])};
-    addBorderLine(face[0], face[1], lines);
-    addBorderLine(face[1], face[2], lines);
-    addBorderLine(face[2], face[0], lines);
-    shadeFong(lines, absoluteFace, image);
+    std::map<int, LinePhong> lines;
+    PhongDot face[] = {PhongDot(absoluteFace[0], camFace[0], normals[0]), PhongDot(absoluteFace[1], camFace[1], normals[1]), PhongDot(absoluteFace[2], camFace[2], normals[2])};
+    addLine(face[0], face[1], lines);
+    addLine(face[1], face[2], lines);
+    addLine(face[2], face[0], lines);
+    shadePhong(lines, absoluteFace, image);
 }
 
-void Cube::shadeFong(std::map<int, LineFongX> &lines, QVector3D *absoluteFace, QImage *image) {
-    std::map<int, LineFongX>::iterator it;
+void Cube::shadePhong(std::map<int, LinePhong> &lines, QVector3D *absoluteFace, QImage *image) {
+    std::map<int, LinePhong>::iterator it;
     for(it = lines.begin(); it != lines.end(); it++) {
-        LineFongX lin = it->second;
-        FongDot beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1), lin.begNormal);
-        FongDot end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2), lin.endNormal);
+        LinePhong lin = it->second;
+        PhongDot beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1), lin.begNormal);
+        PhongDot end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2), lin.endNormal);
         shadeLine(beg, end, image);
     }
 }
@@ -189,46 +188,46 @@ void Cube::drawFace(const QVector<QVector4D> &dots, QVector3D *absoluteFace, QVe
         return;
     }
 
-    std::map<int, LineX> lines;
-    Dot3D face[] = {
-        Dot3D(absoluteFace[0], camRelativeFace[0]),
-        Dot3D(absoluteFace[1], camRelativeFace[1]),
-        Dot3D(absoluteFace[2], camRelativeFace[2])
+    std::map<int, Line> lines;
+    Dot face[] = {
+        Dot(absoluteFace[0], camRelativeFace[0]),
+        Dot(absoluteFace[1], camRelativeFace[1]),
+        Dot(absoluteFace[2], camRelativeFace[2])
     };
-    addBorderLine(face[0], face[1], lines);
-    addBorderLine(face[1], face[2], lines);
-    addBorderLine(face[2], face[0], lines);
+    addLine(face[0], face[1], lines);
+    addLine(face[1], face[2], lines);
+    addLine(face[2], face[0], lines);
     defaultShade(lines, absoluteFace, _image);
 }
 
-void Cube::addBorderLine(Dot3D beg, Dot3D end, std::map<int, LineX> &lines) {
-    QList <Dot3D> dotList = Utils::getDotsForLine(beg, end);
-    for(Dot3D dot : dotList) {
-        addBorderPixel(Dot3D(dot.absolute, dot.cam), lines);
+void Cube::addLine(Dot beg, Dot end, std::map<int, Line> &lines) {
+    QList <Dot> dotList = Utils::getDotsForLine(beg, end);
+    for(Dot dot : dotList) {
+        addPixel(Dot(dot.absolute, dot.cam), lines);
     }
     QVector3D lastCamPoint(int(end.cam.x() + 0.5), int(end.cam.y() + 0.5), end.cam.z());
-    addBorderPixel(Dot3D(end.absolute, lastCamPoint), lines);
+    addPixel(Dot(end.absolute, lastCamPoint), lines);
 }
 
-void Cube::addBorderLine(GuroDot beg, GuroDot end, std::map<int, LineGuroX>& lines) {
-    QList <GuroDot> dotList = Utils::getDotsForLine(beg, end);
-    for(GuroDot dot : dotList) {
-        addBorderPixel(dot, lines);
+void Cube::addLine(GouraudDot beg, GouraudDot end, std::map<int, LineGouraud>& lines) {
+    QList <GouraudDot> dotList = Utils::getDotsForLine(beg, end);
+    for(GouraudDot dot : dotList) {
+        addPixel(dot, lines);
     }
     QVector3D lastCamPoint(int(end.cam.x() + 0.5), int(end.cam.y() + 0.5), end.cam.z());
-    addBorderPixel(end, lines);
+    addPixel(end, lines);
 }
 
-void Cube::addBorderLine(FongDot beg, FongDot end, std::map<int, LineFongX>& lines) {
-    QList <FongDot> dotList = Utils::getDotsForLine(beg, end);
-    for(FongDot dot : dotList) {
-        addBorderPixel(dot, lines);
+void Cube::addLine(PhongDot beg, PhongDot end, std::map<int, LinePhong>& lines) {
+    QList <PhongDot> dotList = Utils::getDotsForLine(beg, end);
+    for(PhongDot dot : dotList) {
+        addPixel(dot, lines);
     }
     QVector3D lastCamPoint(int(end.cam.x() + 0.5), int(end.cam.y() + 0.5), end.cam.z());
-    addBorderPixel(end, lines);
+    addPixel(end, lines);
 }
 
-void Cube::defaultShade(std::map<int, LineX> &lines, QVector3D *absoluteFace, QImage *image) {
+void Cube::defaultShade(std::map<int, Line> &lines, QVector3D *absoluteFace, QImage *image) {
     QVector3D vec1(
             absoluteFace[1].x() - absoluteFace[0].x(),
             absoluteFace[1].y() - absoluteFace[0].y(),
@@ -240,27 +239,27 @@ void Cube::defaultShade(std::map<int, LineX> &lines, QVector3D *absoluteFace, QI
             absoluteFace[2].z() - absoluteFace[1].z()
     );
     QVector3D normal = QVector3D::normal(vec1, vec2);
-    std::map<int, LineX>::iterator it;
+    std::map<int, Line>::iterator it;
     for(it = lines.begin(); it != lines.end(); it++) {
-        LineX lin = it->second;
-        Dot3D beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1));
-        Dot3D end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2));
+        Line lin = it->second;
+        Dot beg(lin.absoluteBeg, QVector3D(lin.x1, it->first, lin.z1));
+        Dot end(lin.absoluteEnd, QVector3D(lin.x2, it->first, lin.z2));
         shadeLine(beg, end, normal, image);
     }
 }
 
-void Cube::shadeLine(Dot3D beg, Dot3D end, QVector3D normal, QImage *image) {
-    QList <Dot3D> dotList = Utils::getDotsForLine(beg, end);
+void Cube::shadeLine(Dot beg, Dot end, QVector3D normal, QImage *image) {
+    QList <Dot> dotList = Utils::getDotsForLine(beg, end);
     QColor color(Qt::white);
-    for(Dot3D dot : dotList) {
+    for(Dot dot : dotList) {
         color = Lamp::calcSummaryLight(dot.absolute, normal);
         image->setPixelColor(dot.cam.x(), dot.cam.y(), color);
     }
 }
 
-void Cube::shadeLine(GuroDot beg, GuroDot end, QImage * image) {
-    QList <GuroDot> dotList = Utils::getDotsForLine(beg, end);
-    for(GuroDot dot : dotList) {
+void Cube::shadeLine(GouraudDot beg, GouraudDot end, QImage * image) {
+    QList <GouraudDot> dotList = Utils::getDotsForLine(beg, end);
+    for(GouraudDot dot : dotList) {
         QVector <QVector4D> intens = dot.intens;
         QVector4D colorVec(0.f, 0.f, 0.f, 1.f);
         for(int i=0; i < intens.size(); i++) {
@@ -271,9 +270,9 @@ void Cube::shadeLine(GuroDot beg, GuroDot end, QImage * image) {
     }
 }
 
-void Cube::shadeLine(FongDot beg, FongDot end, QImage * image) {
-    QList <FongDot> dotList = Utils::getDotsForLine(beg, end);
-    for(FongDot dot : dotList) {
+void Cube::shadeLine(PhongDot beg, PhongDot end, QImage * image) {
+    QList <PhongDot> dotList = Utils::getDotsForLine(beg, end);
+    for(PhongDot dot : dotList) {
         QVector3D normal = dot.normal;
         QColor color = Lamp::calcSummaryLight(dot.absolute, normal);
         image->setPixelColor(dot.cam.x(), dot.cam.y(), color);
