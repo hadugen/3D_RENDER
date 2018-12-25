@@ -1,5 +1,5 @@
 #include "cube.h"
-
+#include <QDebug>
 Cube::Cube() {
     addVerts();
     addEdges();
@@ -30,7 +30,6 @@ void Cube::renderOnImage(Matrix4x4 viewProjection, QImage *image) {
                 image->size().height(),
                 image->size().width()
     );
-
     for(QVector3D vert : _verts) {
         QVector4D vec4(vert, 1);
         QVector4D dot = viewProjection * vec4;

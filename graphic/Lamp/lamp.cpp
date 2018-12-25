@@ -134,7 +134,7 @@ QVector4D Lamp::calcPhongLightOnPoint(QVector3D absolutePos, QVector3D normal) {
             specularColor = QVector4D(_color.red(), _color.green(), _color.blue(), 1.0) * (0.2f * specularFactor);
         }
     }
-    QVector4D color = ambientColor + diffuseColor;
+    QVector4D color = ambientColor + diffuseColor + specularColor;
     float attenuation = 1.0 + this->_attenuation.x() * dist + this->_attenuation.y() * dist2;
     attenuation = std::max(1.f, attenuation);
     return color / attenuation;
