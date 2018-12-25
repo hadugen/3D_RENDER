@@ -164,14 +164,10 @@ void MainWindow::prepareFrame() {
     QVector3D objectPosition(0.0f, 0.0f, 0.0f);
     matView.lookAt(_currentCameraPos, objectPosition, cameraUp);
     double aspectRatio = size.height() / size.width();
-    matProjection.toProjectionMatrix(getNormalForVector(_currentCameraPos - objectPosition), aspectRatio);
+    matProjection.toProjectionMatrix((_currentCameraPos - objectPosition).length(), aspectRatio);
     Matrix4x4 viewProjection = matProjection * matView;
     renderObjectsOnFrame(viewProjection, _objects);
     _deltaCameraPos = QVector2D(0, 0);
-}
-
-double MainWindow::getNormalForVector(const QVector3D &vec) {
-    return std::sqrt(vec.x() * vec.x() + vec.y() * vec.y() + vec.z() * vec.z());
 }
 
 double MainWindow::getNewXAxisRotation() {

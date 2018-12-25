@@ -52,8 +52,6 @@ private:
     QTime _lastFrameWasAt;
     uint _frameRate = 60;
 
-    double getNormalForVector(const QVector3D &vec);
-
     double getNewYAxisRotation();
     double getNewXAxisRotation();
 
