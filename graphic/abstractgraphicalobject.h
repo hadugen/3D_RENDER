@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <matrix4x4.h>
 #include <utils.h>
+#include <QtMath>
 
 class AbstractGraphicalObject
 {

@@ -19,7 +19,7 @@ public:
     Matrix4x4 & operator= (const Matrix4x4 & second);
     Matrix4x4 operator* (const Matrix4x4 & second);
     QVector4D operator* (const QVector4D & second);
-
+    void debug();
 private:
     double _matrix[16];
 

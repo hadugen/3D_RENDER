@@ -196,6 +196,7 @@ void Cube::drawFace(const QVector<QVector4D> &dots, QVector3D *absoluteFace, QVe
     addLine(face[0], face[1], lines);
     addLine(face[1], face[2], lines);
     addLine(face[2], face[0], lines);
+
     defaultShade(lines, absoluteFace, _image);
 }
 

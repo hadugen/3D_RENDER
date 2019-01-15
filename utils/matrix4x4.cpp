@@ -1,4 +1,5 @@
 #include "matrix4x4.h"
+#include <QDebug>
 
 Matrix4x4::Matrix4x4() {
     memset(_matrix, 0.0f, 16 * sizeof(double));
@@ -96,7 +97,13 @@ QVector4D Matrix4x4::operator*(const QVector4D &vec) {
             this->_matrix[4]  * vec.x() + this->_matrix[5]  * vec.y() + this->_matrix[6]  * vec.z() + this->_matrix[7]  * vec.w(),
             this->_matrix[8]  * vec.x() + this->_matrix[9]  * vec.y() + this->_matrix[10] * vec.z() + this->_matrix[11] * vec.w(),
             this->_matrix[12] * vec.x() + this->_matrix[13] * vec.y() + this->_matrix[14] * vec.z() + this->_matrix[15] * vec.w()
-    );
+            );
+}
+
+void Matrix4x4::debug() {
+    for(int i = 0 ; i < 4; i++) {
+        qDebug() << _matrix[0 + i * 4] << _matrix[1 + i * 4] << _matrix[2 + i * 4] << _matrix[3 + i * 4];
+    }
 }
 
 Matrix4x4 & Matrix4x4::inverse() {

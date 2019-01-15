@@ -159,7 +159,6 @@ QVector4D Lamp::calcLightOnPoint(QVector3D absolutePos, QVector3D normal) {
     switch (Lamp::_shadingType) {
     case DEFAULT_SHADING:   return calcDefaultLightOnPoint(absolutePos, normal);
     case PHONG_SHADING:     return calcDefaultLightOnPoint(absolutePos, normal);
-    case GOURAUD_SHADING:   return calcPhongLightOnPoint(absolutePos, normal);
     default:                return calcPhongLightOnPoint(absolutePos, normal);
     }
 }

@@ -138,7 +138,8 @@ void MainWindow::drawFPS(int frameTime) {
 }
 
 void MainWindow::renderObjectsOnFrame(Matrix4x4 matrix, QVector<AbstractGraphicalObject*> objects) {
-    _frame = QImage(750, 750, QImage::Format_RGBA8888);
+    _frame = QImage(750, 750, QImage::Format_RGB32);
+    _frame.fill(Qt::black);
     drawFPS(_lastFrameWasAt.elapsed());
     _lastFrameWasAt = QTime::currentTime();
     for(AbstractGraphicalObject *obj : objects) {
